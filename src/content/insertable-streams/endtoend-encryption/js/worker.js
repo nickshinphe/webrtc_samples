@@ -81,11 +81,25 @@ function encodeFunction(encodedFrame, controller) {
   controller.enqueue(encodedFrame);
 }
 
+let NIKNIKtriggerPli = false;
+let NIKNIKtransformer;
+
 let rcount = 0;
 function decodeFunction(encodedFrame, controller) {
   if (rcount++ < 30) { // dump the first 30 packets
     dump(encodedFrame, 'recv');
   }
+
+  if (NIKNIKtransformer && NIKNIKtriggerPli) {
+    NIKNIKtransformer.sendKeyFrameRequest();
+  }
+  if (encodedFrame.type === 'key') {
+    console.log(performance.now().toFixed(2), 'recv',
+      'type=' + (encodedFrame.type || 'audio'),
+      'ts=' + encodedFrame.timestamp,
+    );
+  }
+
   const view = new DataView(encodedFrame.data);
   const checksum = encodedFrame.data.byteLength > 4 ? view.getUint32(encodedFrame.data.byteLength - 4) : false;
   if (currentCryptoKey) {
@@ -148,6 +162,11 @@ onmessage = (event) => {
     currentCryptoKey = event.data.currentCryptoKey;
     useCryptoOffset = event.data.useCryptoOffset;
   }
+  else if (event.data.operation === 'PLI') {
+    NIKNIKtriggerPli = event.data.pli;
+  } else {
+    console.log('NIKNIK: WHO DIS? event: ', event);
+  }
 };
 
 // Handler for RTCRtpScriptTransforms.
@@ -155,5 +174,18 @@ if (self.RTCTransformEvent) {
   self.onrtctransform = (event) => {
     const transformer = event.transformer;
     handleTransform(transformer.options.operation, transformer.readable, transformer.writable);
+
+    NIKNIKtransformer = transformer;
+// XXX following are from sendKeyFrameRequest examples - while, using MessageChannel...
+//    if (transformer.options.port) {
+//      transformer.options.port.onmessage = (portevent) => {
+//        const { key } = portevent.data;
+//        // key is used by the transformer to decrypt frames (not shown)
+//
+//        // Request sender to emit a key frame.
+//        // Here 'rcevent' is the rtctransform event.
+//        transformer.sendKeyFrameRequest();
+//      }
+//    }
   };
 }
