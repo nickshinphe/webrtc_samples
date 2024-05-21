@@ -121,8 +121,6 @@ setInterval(() => {
     pli: NIKNIKtriggerPli,
   });
 }, 15000);
-// XXX following are from sendKeyFrameRequest examples - but, using MessageChannel...
-//const XXX_message_channel_NOT_NEEDED = new MessageChannel();
 
 // We use a Worker to do the encryption and decryption.
 // See
@@ -131,17 +129,7 @@ setInterval(() => {
 const worker = new Worker('./js/worker.js', {name: 'E2EE worker'});
 function setupSenderTransform(sender) {
   if (window.RTCRtpScriptTransform) {
-    if (sender.track.kind === 'video' && !!startToEnd) {
-      sender.transform = new RTCRtpScriptTransform(worker, {
-        operation: 'encode',
-//        name: "receiverTransform", port: XXX_message_channel_NOT_NEEDED.port2
-//      }, [XXX_message_channel_NOT_NEEDED.port2]);
-      });
-    } else {
-      sender.transform = new RTCRtpScriptTransform(worker, {
-        operation: 'encode',
-      });
-    }
+    sender.transform = new RTCRtpScriptTransform(worker, {operation: 'encode'});
     return;
   }
 
@@ -224,11 +212,6 @@ function call() {
   });
   startToEnd.pc1.getSenders().forEach(setupSenderTransform);
   startToEnd.negotiate();
-
-//  XXX_message_channel_NOT_NEEDED.port1.start();
-//  XXX_message_channel_NOT_NEEDED.port1.postMessage({
-//    key: "NIKNIK93ae0927a4f8e527f1gce6d10bc6ab6c",
-//  });
 
   console.log('Video pipes created');
 }

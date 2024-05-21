@@ -174,18 +174,6 @@ if (self.RTCTransformEvent) {
   self.onrtctransform = (event) => {
     const transformer = event.transformer;
     handleTransform(transformer.options.operation, transformer.readable, transformer.writable);
-
     NIKNIKtransformer = transformer;
-// XXX following are from sendKeyFrameRequest examples - while, using MessageChannel...
-//    if (transformer.options.port) {
-//      transformer.options.port.onmessage = (portevent) => {
-//        const { key } = portevent.data;
-//        // key is used by the transformer to decrypt frames (not shown)
-//
-//        // Request sender to emit a key frame.
-//        // Here 'rcevent' is the rtctransform event.
-//        transformer.sendKeyFrameRequest();
-//      }
-//    }
   };
 }
